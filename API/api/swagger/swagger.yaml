@@ -1,0 +1,346 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Volley Detente API
+# basePath prefixes all resource paths 
+basePath: /api
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+####################################################################################
+# Status
+  /admin/ready:
+    x-swagger-router-controller: status
+    get:
+      description: Return Success if the server is ready to manage request
+      # used as the method name of the controller
+      operationId: readynessprobe
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Success
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/alive:
+    x-swagger-router-controller: status
+    get:
+      description: Return Success if the server is alive
+      # used as the method name of the controller
+      operationId: livenessprobe
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Success
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+####################################################################################
+# Users
+  /user:
+    x-swagger-router-controller: users
+    post:
+      tags:
+        - User
+      description: Create a new user
+      operationId: createUser
+      parameters:
+        - name: AdminKey
+          in: header
+          description: The admin key
+          required: false
+          type: string
+        - name: session
+          in: header
+          description: The user session
+          required: false
+          type: string
+        - name: user
+          in: body
+          description: The user to create
+          required: true
+          schema:
+            $ref: "#/definitions/CreateUser"
+      responses:
+        "201":
+          description: Created
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - User
+      description: Return the list of users
+      operationId: listUsers
+      parameters:
+        - name: session
+          in: header
+          description: The user session
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/User"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/me:
+    x-swagger-router-controller: users
+    get:
+      tags:
+        - User
+      description: Retreive the user information of the user currently login
+      operationId: getUserMe
+      parameters:
+        - name: session
+          in: header
+          description: The user session
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/User"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - User
+      description: Update the user currently login
+      operationId: updateUserMe
+      parameters:
+        - name: session
+          in: header
+          description: The user session
+          required: true
+          type: string
+        - name: user
+          in: body
+          description: The new user data
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateUser"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/User"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/{userid}:
+    x-swagger-router-controller: users
+    get:
+      tags:
+        - User
+      description: Retreive the user information
+      operationId: getUser
+      parameters:
+        - name: session
+          in: header
+          description: The user session
+          required: true
+          type: string
+        - name: userid
+          in: path
+          description: The Id of the user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/User"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - Admin
+      description: Update the given user
+      operationId: updateUser
+      parameters:
+        - name: session
+          in: header
+          description: The user session
+          required: true
+          type: string
+        - name: userid
+          in: path
+          description: The Id of the user
+          required: true
+          type: string
+        - name: user
+          in: body
+          description: The new user data
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateUser"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/User"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - Admin
+      description: Delete the given user
+      operationId: deleteUser
+      parameters:
+        - name: AdminKey
+          in: header
+          description: The admin key
+          required: true
+          type: string
+        - name: userid
+          in: path
+          description: The Id of the user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+####################################################################################
+# Session Management API
+  /session:
+    x-swagger-router-controller: session
+    post:
+      tags:
+        - User
+      description: Signin
+      operationId: signin
+      parameters:
+        - name: user
+          in: body
+          description: The user to signin
+          required: true
+          schema:
+            $ref: "#/definitions/Credentials"
+      responses:
+        "200":
+          description: OK
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Session"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - User
+      description: Signout
+      operationId: signout
+      parameters:
+        - name: session
+          in: header
+          description: The session of the connected user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: OK
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+###################################################################################
+# Swagger
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  User:
+    properties:
+      login:
+        type: string
+        pattern: ^[0-9a-zA-Z_]*$
+      password:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      licence:
+        type: string
+      match:
+        type: boolean
+      admin:
+        type: boolean
+  Credentials:
+    required:
+      - login
+      - password
+    allOf:
+      - $ref: '#/definitions/User'
+  CreateUser:
+    required:
+      - login
+      - password
+    allOf:
+      - $ref: '#/definitions/User'
+  UpdateUser:
+    required:
+      - login
+    allOf:
+      - $ref: '#/definitions/User'
+###################################################################################
+# Session
+  Session:
+    properties:
+      session: 
+        type: string
+  ErrorResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
